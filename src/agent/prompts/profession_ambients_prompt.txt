@@ -64,11 +64,13 @@
      * "Programmer working at dual monitor setup in modern office, code editor visible on screen, mechanical keyboard, coffee cup nearby, afternoon sunlight, focused atmosphere, professional photo"
 
 6. SOUND_PROMPT (опциональное):
-   - Описание звукового окружения на русском
-   - Включает: фоновые звуки, основные звуки, их характеристики
+   - ВАЖНО: Пиши ТОЛЬКО на английском языке!
+   - ВАЖНО: Описывай МАКСИМУМ 2 звука!
+   - Краткое описание звукового окружения
    - Примеры:
-     * "Звуки клавиатуры (механическая, ритмичные клики), тихий гул разговоров коллег на фоне, изредка звук уведомлений мессенджера"
-     * "Звук звонка в видеоконференции, приглушённые голоса участников встречи, небольшое эхо от микрофонов"
+     * "Mechanical keyboard typing sounds, office ambient background"
+     * "Video call notification sound, muffled voices discussion"
+     * "Coffee machine brewing, quiet footsteps"
 
 7. VOICE (опциональное):
    - Конкретная фраза, которую кто-то говорит в этой ситуации

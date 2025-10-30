@@ -96,3 +96,55 @@ class AmbientsGenerateResponse(BaseModel):
     profession_title: str = Field(..., description="Название профессии")
     ambients: List[AmbientEnvironment] = Field(..., description="Список окружений")
     tools: ProfessionTools = Field(..., description="Инструменты профессии")
+
+
+class AmbientEnvironmentWithMedia(BaseModel):
+    """Модель окружения с сгенерированными медиа файлами"""
+    id: str = Field(..., description="Идентификатор окружения")
+    name: str = Field(..., description="Название окружения")
+    text: str = Field(..., description="Текстовое описание ситуации")
+    image_prompt: str | None = Field(default=None, description="Промпт для изображения")
+    image_path: str | None = Field(default=None, description="Путь к сгенерированному изображению")
+    image_error: str | None = Field(default=None, description="Ошибка генерации изображения")
+    sound_prompt: str | None = Field(default=None, description="Промпт для звуков")
+    sound_path: str | None = Field(default=None, description="Путь к сгенерированному звуку")
+    sound_error: str | None = Field(default=None, description="Ошибка генерации звука")
+    voice: str | None = Field(default=None, description="Текст голоса")
+    voice_path: str | None = Field(default=None, description="Путь к сгенерированному голосу")
+    voice_error: str | None = Field(default=None, description="Ошибка генерации голоса")
+
+
+class AmbientsWithMediaRequest(BaseModel):
+    """Запрос на генерацию окружений с медиа файлами"""
+    profession_title: str = Field(..., description="Название выбранной профессии")
+    question_answers: List[QuestionAnswer] = Field(..., description="Ответы на уточняющие вопросы")
+    use_template: bool = Field(default=False, description="Использовать шаблонные данные для тестирования")
+
+
+class AmbientsWithMediaResponse(BaseModel):
+    """Ответ с окружениями и сгенерированными медиа"""
+    profession_title: str = Field(..., description="Название профессии")
+    ambients: List[AmbientEnvironmentWithMedia] = Field(..., description="Список окружений с медиа")
+    tools: ProfessionTools = Field(..., description="Инструменты профессии")
+    json_path: str = Field(..., description="Путь к сохраненному JSON файлу")
+    generation_stats: dict = Field(default={}, description="Статистика генерации")
+
+
+class GenerateMediaForAmbientRequest(BaseModel):
+    """Запрос на генерацию медиа для конкретного окружения"""
+    ambient_id: str = Field(..., description="ID окружения")
+    image_prompt: str | None = Field(default=None, description="Промпт для изображения")
+    sound_prompt: str | None = Field(default=None, description="Промпт для звука")
+    voice_text: str | None = Field(default=None, description="Текст для голоса")
+    use_template: bool = Field(default=False, description="Использовать шаблон")
+
+
+class GenerateMediaForAmbientResponse(BaseModel):
+    """Ответ с сгенерированными медиа для окружения"""
+    ambient_id: str = Field(..., description="ID окружения")
+    image_path: str | None = Field(default=None, description="Путь к изображению")
+    image_error: str | None = Field(default=None, description="Ошибка генерации изображения")
+    sound_path: str | None = Field(default=None, description="Путь к звуку")
+    sound_error: str | None = Field(default=None, description="Ошибка генерации звука")
+    voice_path: str | None = Field(default=None, description="Путь к голосу")
+    voice_error: str | None = Field(default=None, description="Ошибка генерации голоса")
