@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
 
 class RoadmapSkill(BaseModel):
@@ -25,10 +25,16 @@ class RoadmapProject(BaseModel):
 
 class RoadmapResource(BaseModel):
     """Модель ресурса для обучения"""
-    type: str = Field(..., description="Тип: course, book, video, documentation, community, certification")
+    type: str = Field(..., description="Тип: course, book, video, documentation, community")
     title: str = Field(..., description="Название ресурса")
     description: str = Field(..., description="Почему ресурс ценен")
     link: Optional[str] = Field(None, description="URL ресурса")
+
+
+class InterviewQuestion(BaseModel):
+    """Модель вопроса на собеседовании"""
+    question: str = Field(..., description="Вопрос на собеседовании")
+    answer: str = Field(..., description="Ответ на вопрос")
 
 
 class RoadmapStage(BaseModel):
@@ -43,7 +49,11 @@ class RoadmapStage(BaseModel):
     tools: List[RoadmapTool] = Field(..., description="Инструменты для освоения (3-10 пунктов)")
     projects: List[RoadmapProject] = Field(..., description="Проекты для практики (2-4 пункта)")
     resources: List[RoadmapResource] = Field(..., description="Ресурсы для обучения (3-6 пунктов)")
-    tips: List[str] = Field(..., description="Персонализированные советы (2-4 пункта)")
+    interviewQuestions: List[InterviewQuestion] = Field(default_factory=list, description="Вопросы на собеседовании (5-10 пунктов)")
+    
+    class Config:
+        # Разрешаем дополнительные поля (для обратной совместимости)
+        extra = "allow"
 
 
 class RoadmapOverview(BaseModel):
@@ -55,40 +65,15 @@ class RoadmapOverview(BaseModel):
     astrologyInsight: Optional[str] = Field(None, description="Астрологическая перспектива")
 
 
-class RoadmapMilestone(BaseModel):
-    """Важная веха в карьерном развитии"""
-    id: str = Field(..., description="Идентификатор вехи")
-    title: str = Field(..., description="Название вехи")
-    stage: str = Field(..., description="На каком этапе достигается")
-    description: str = Field(..., description="Что означает достижение вехи")
-    criteria: List[str] = Field(..., description="Критерии успеха")
-
-
-class RoadmapCertification(BaseModel):
-    """Сертификация"""
-    name: str = Field(..., description="Название сертификации")
-    provider: str = Field(..., description="Организация-провайдер")
-    stage: str = Field(..., description="На каком этапе рекомендуется")
-    description: str = Field(..., description="Ценность сертификации")
-    optional: bool = Field(..., description="Является ли опциональной")
-
-
-class RoadmapCareerPath(BaseModel):
-    """Возможное направление специализации"""
-    title: str = Field(..., description="Название направления")
-    description: str = Field(..., description="Что включает это направление")
-    fromStage: str = Field(..., description="С какого этапа доступно")
-    skills: List[str] = Field(..., description="Необходимые навыки")
-
-
 class ProfessionRoadmap(BaseModel):
     """Полный roadmap по профессии"""
     profession: str = Field(..., description="Название профессии")
     overview: RoadmapOverview = Field(..., description="Обзор roadmap")
     stages: List[RoadmapStage] = Field(..., description="Этапы развития (5 этапов)")
-    milestones: List[RoadmapMilestone] = Field(..., description="Ключевые вехи (8-15)")
-    certifications: List[RoadmapCertification] = Field(..., description="Сертификации (3-8)")
-    careerPaths: List[RoadmapCareerPath] = Field(..., description="Направления специализации (3-5)")
+    
+    class Config:
+        # Убеждаемся что все поля сериализуются
+        validate_assignment = True
 
 
 class RoadmapGenerateRequest(BaseModel):
@@ -102,4 +87,3 @@ class RoadmapGenerateResponse(BaseModel):
     roadmap: ProfessionRoadmap = Field(..., description="Сгенерированный roadmap")
     has_personality_data: bool = Field(..., description="Использовались ли данные личности")
     has_astrology_data: bool = Field(..., description="Использовались ли астрологические данные")
-

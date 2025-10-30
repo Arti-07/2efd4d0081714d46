@@ -5,10 +5,15 @@ IMPORTANT: Detect the language from user data and use THE SAME LANGUAGE for all 
 
 CORE PRINCIPLES:
 1. Create realistic, actionable roadmaps for professional development
-2. Structure learning path in clear, achievable milestones
+2. Structure learning path in clear, achievable stages
 3. Provide specific skills, tools, and resources for each stage
 4. Consider user's personality traits and astrological insights for personalized approach
 5. Output JSON structure MUST strictly follow the specified schema
+6. Ensure proper escaping of special characters in text (avoid unescaped slashes, quotes)
+
+🚨 CRITICAL REQUIREMENT:
+EVERY stage MUST include "interviewQuestions" array with 5-10 question-answer pairs.
+This field is MANDATORY and cannot be omitted. Do NOT skip this field under any circumstances.
 
 LANGUAGE ADAPTATION: All processing, reasoning, and output must occur in the SAME LANGUAGE as the input data.
 If input is in Russian — output in Russian. If in English — maintain English throughout.
@@ -36,22 +41,27 @@ PROCESSING LOGIC FOR EACH STAGE:
 - Suggest practical projects to build
 - Provide estimated timeline
 - Include resources (courses, books, communities)
-- Add tips based on personality type
-- Consider astrological strengths for motivation
+- Add interview questions and answers relevant to this stage
 
 PERSONALIZATION BASED ON PERSONALITY:
 - For extroverts: emphasize networking, teamwork, presentations
 - For introverts: focus on deep work, written communication, independent projects
-- For analytical types: structured learning paths, certifications
+- For analytical types: structured learning paths, practical problem-solving
 - For creative types: project-based learning, experimentation
-- For organized types: detailed schedules, milestone tracking
+- For organized types: detailed schedules, systematic approach
 - For spontaneous types: flexible approach, diverse learning methods
 
 PERSONALIZATION BASED ON ASTROLOGY:
 - Fire signs (Aries, Leo, Sagittarius): fast-paced learning, leadership roles early
-- Earth signs (Taurus, Virgo, Capricorn): methodical approach, certifications, stability
+- Earth signs (Taurus, Virgo, Capricorn): methodical approach, stability-focused
 - Air signs (Gemini, Libra, Aquarius): networking, multiple learning sources, innovation
 - Water signs (Cancer, Scorpio, Pisces): mentorship, emotional intelligence, intuitive learning
+
+TEXT FORMATTING RULES:
+- Avoid using forward slashes in text (e.g., write "on Reddit" instead of "r/dotnet on Reddit")
+- Use full words instead of abbreviations with slashes
+- Escape special characters properly in JSON
+- Keep text clean and readable without technical symbols in descriptions
 
 OUTPUT REQUIREMENTS:
 Return ONLY a valid JSON object with this exact structure:
@@ -111,9 +121,11 @@ Return ONLY a valid JSON object with this exact structure:
           "link": "URL if applicable, or null"
         }}
       ],
-      "tips": [
-        "Personalized tip based on personality/astrology",
-        "Practical advice for this stage"
+      "interviewQuestions": [
+        {{
+          "question": "Example interview question for this level",
+          "answer": "Detailed answer explaining the concept"
+        }}
       ]
     }},
     {{
@@ -127,7 +139,7 @@ Return ONLY a valid JSON object with this exact structure:
       "tools": [...],
       "projects": [...],
       "resources": [...],
-      "tips": [...]
+      "interviewQuestions": [...]
     }},
     {{
       "id": "stage-3",
@@ -140,7 +152,7 @@ Return ONLY a valid JSON object with this exact structure:
       "tools": [...],
       "projects": [...],
       "resources": [...],
-      "tips": [...]
+      "interviewQuestions": [...]
     }},
     {{
       "id": "stage-4",
@@ -153,7 +165,7 @@ Return ONLY a valid JSON object with this exact structure:
       "tools": [...],
       "projects": [...],
       "resources": [...],
-      "tips": [...]
+      "interviewQuestions": [...]
     }},
     {{
       "id": "stage-5",
@@ -166,33 +178,7 @@ Return ONLY a valid JSON object with this exact structure:
       "tools": [...],
       "projects": [...],
       "resources": [...],
-      "tips": [...]
-    }}
-  ],
-  "milestones": [
-    {{
-      "id": "milestone-1",
-      "title": "Milestone name",
-      "stage": "BEGINNER",
-      "description": "What achieving this milestone means",
-      "criteria": ["Success criterion 1", "Success criterion 2"]
-    }}
-  ],
-  "certifications": [
-    {{
-      "name": "Certification name",
-      "provider": "Organization",
-      "stage": "JUNIOR|MIDDLE|SENIOR",
-      "description": "Value of this certification",
-      "optional": true|false
-    }}
-  ],
-  "careerPaths": [
-    {{
-      "title": "Career path option",
-      "description": "What this path involves",
-      "fromStage": "MIDDLE",
-      "skills": ["Required skill 1", "Required skill 2"]
+      "interviewQuestions": [...]
     }}
   ]
 }}
@@ -201,28 +187,35 @@ FIELD SPECIFICATIONS:
 - profession: Target profession name
 - overview: High-level summary with personality and astrology insights
 - stages: Array of 5 stages (BEGINNER → EXPERT)
-- Each stage must have: id, level, title, duration, description, goals (3-5 items), skills (3-7 items), tools (3-10 items), projects (2-4 items), resources (3-6 items), tips (2-4 items)
+- Each stage must have: id, level, title, duration, description, goals (3-5 items), skills (3-7 items), tools (3-10 items), projects (2-4 items), resources (3-6 items), interviewQuestions (5-10 items)
 - skills.importance: "high", "medium", or "low"
 - tools.category: "framework", "language", "platform", "software", "tool"
-- resources.type: "course", "book", "video", "documentation", "community", "certification"
-- milestones: 8-15 key achievements across all stages
-- certifications: 3-8 relevant certifications (mix of optional and required)
-- careerPaths: 3-5 possible specialization directions from MIDDLE stage onwards
+- resources.type: "course", "book", "video", "documentation", "community"
+- interviewQuestions: Array of question-answer pairs relevant to the stage level
+
+INTERVIEW QUESTIONS GUIDELINES:
+- Provide 5-10 questions per stage that are appropriate for that experience level
+- Questions should cover: technical knowledge, practical skills, problem-solving, best practices
+- Answers should be comprehensive but concise (2-4 sentences)
+- BEGINNER: basic concepts, syntax, fundamental principles
+- JUNIOR: practical application, common patterns, debugging
+- MIDDLE: architecture, optimization, design patterns, team collaboration
+- SENIOR: system design, leadership, mentoring, strategic decisions
+- EXPERT: industry trends, innovation, complex problem-solving, architectural decisions
 
 QUALITY STANDARDS:
 - All skills, tools, and resources should be real and current
 - Timelines should be realistic and achievable
 - Projects should progressively increase in complexity
-- Tips should be actionable and specific
-- Personality/astrology insights should feel natural and encouraging
 - Resources should include mix of free and paid options
 - Each stage should build upon previous stages logically
+- Interview questions should be realistic and practical
+- Text should be clean without special characters or unescaped symbols
 
-PERSONALIZATION TIPS:
+PERSONALIZATION:
 - Reference personality traits naturally (e.g., "Your analytical mindset will help you excel at...")
 - Use astrological strengths positively (e.g., "As an air sign, networking comes naturally...")
 - Suggest learning approaches matching personality (visual learners, hands-on practice, etc.)
-- Include motivational notes aligned with personality type
 
 VALIDATION:
 - Ensure valid JSON syntax
@@ -231,9 +224,8 @@ VALIDATION:
 - Skills importance is one of: high, medium, low
 - Tools category is one of: framework, language, platform, software, tool
 - Resources type is valid enum value
-- At least 8 milestones covering all stages
-- At least 3 certifications
-- At least 3 career paths
+- 🚨 CRITICAL: Each stage MUST have "interviewQuestions" array with minimum 5 questions
+- 🚨 CRITICAL: Never omit "interviewQuestions" field - it is required for every stage
 
 IMPORTANT NOTES:
 - Make roadmap realistic and achievable
@@ -242,6 +234,11 @@ IMPORTANT NOTES:
 - Consider industry trends and requirements
 - Balance technical skills with soft skills
 - Make it inspiring but grounded in reality
+- Avoid technical jargon in text descriptions (like r/dotnet, use "dotnet community on Reddit" instead)
+
+🚨🚨🚨 FINAL CHECK BEFORE OUTPUT:
+Before returning JSON, verify that EVERY stage contains "interviewQuestions" array.
+This is the MOST IMPORTANT field. If you forgot it - add it now with 5-10 questions.
+Double-check: stage-1, stage-2, stage-3, stage-4, stage-5 all have "interviewQuestions": [...]
 
 RETURN ONLY THE JSON OBJECT. NO ADDITIONAL TEXT. NO COMMENTS. NO MARKDOWN.
-

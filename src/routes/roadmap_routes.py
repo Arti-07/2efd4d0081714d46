@@ -19,7 +19,7 @@ security = HTTPBearer()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/generate", response_model=RoadmapGenerateResponse)
+@router.post("/generate", response_model=RoadmapGenerateResponse, response_model_exclude_none=False)
 async def generate_profession_roadmap(
     request: RoadmapGenerateRequest,
     credentials: HTTPAuthorizationCredentials = Depends(security)
@@ -102,8 +102,19 @@ async def generate_profession_roadmap(
         
         roadmap_data = await agent.generate_roadmap()
         
+        # Логируем первый этап для проверки
+        if roadmap_data.get('stages') and len(roadmap_data['stages']) > 0:
+            first_stage = roadmap_data['stages'][0]
+            logger.info(f"First stage has interviewQuestions: {'interviewQuestions' in first_stage}")
+            if 'interviewQuestions' in first_stage:
+                logger.info(f"Number of questions: {len(first_stage['interviewQuestions'])}")
+        
         # Преобразуем в модель Pydantic для валидации
         roadmap = ProfessionRoadmap(**roadmap_data)
+        
+        # Проверяем после валидации
+        if roadmap.stages and len(roadmap.stages) > 0:
+            logger.info(f"After Pydantic: first stage has {len(roadmap.stages[0].interviewQuestions)} questions")
         
         logger.info(f"Successfully generated roadmap with {len(roadmap.stages)} stages")
         

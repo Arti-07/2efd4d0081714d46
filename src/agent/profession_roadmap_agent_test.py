@@ -89,29 +89,10 @@ async def main():
             for tool in stage.get('tools', [])[:5]:  # Показываем первые 5
                 print(f"     • {tool.get('name')} ({tool.get('category')})")
             
-            print(f"\n  💡 Советы:")
-            for tip in stage.get('tips', []):
-                print(f"     • {tip}")
-        
-        # Вехи
-        milestones = result.get('milestones', [])
-        print(f"\n🏆 КЛЮЧЕВЫЕ ВЕХИ ({len(milestones)} вех)")
-        for milestone in milestones[:5]:  # Показываем первые 5
-            print(f"   • [{milestone.get('stage')}] {milestone.get('title')}")
-        
-        # Сертификации
-        certifications = result.get('certifications', [])
-        print(f"\n📜 СЕРТИФИКАЦИИ ({len(certifications)} сертификаций)")
-        for cert in certifications[:5]:  # Показываем первые 5
-            optional = "(опционально)" if cert.get('optional') else "(обязательно)"
-            print(f"   • [{cert.get('stage')}] {cert.get('name')} - {cert.get('provider')} {optional}")
-        
-        # Карьерные пути
-        career_paths = result.get('careerPaths', [])
-        print(f"\n🚀 НАПРАВЛЕНИЯ СПЕЦИАЛИЗАЦИИ ({len(career_paths)} путей)")
-        for path in career_paths:
-            print(f"   • {path.get('title')} (от {path.get('fromStage')})")
-            print(f"     {path.get('description')}")
+            print(f"\n  💬 Вопросы на собеседовании ({len(stage.get('interviewQuestions', []))}):")
+            for qa in stage.get('interviewQuestions', [])[:3]:  # Показываем первые 3
+                print(f"     Q: {qa.get('question')}")
+                print(f"     A: {qa.get('answer')[:100]}...")
         
         # Сохраняем полный результат в JSON файл
         with open("roadmap_result.json", "w", encoding="utf-8") as f:
@@ -129,4 +110,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
