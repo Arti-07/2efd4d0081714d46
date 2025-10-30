@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict, Any
 
 
 class ProfessionCard(BaseModel):
@@ -19,4 +19,28 @@ class VibeGenerateResponse(BaseModel):
     total_count: int = Field(..., description="Общее количество карточек")
     has_personality_data: bool = Field(..., description="Наличие данных теста личности")
     has_astrology_data: bool = Field(..., description="Наличие астрологических данных")
+
+
+class QuestionOption(BaseModel):
+    """Вариант ответа на вопрос"""
+    id: str = Field(..., description="Идентификатор варианта")
+    text: str = Field(..., description="Текст варианта ответа")
+
+
+class ClarifyingQuestion(BaseModel):
+    """Уточняющий вопрос о профессии"""
+    id: str = Field(..., description="Идентификатор вопроса")
+    question: str = Field(..., description="Текст вопроса")
+    allow_custom_answer: bool = Field(default=True, description="Разрешить пользователю ввести свой ответ")
+    options: List[QuestionOption] = Field(..., description="Варианты ответа")
+
+
+class VibeQuestionsRequest(BaseModel):
+    """Запрос на получение уточняющих вопросов"""
+    profession_title: str = Field(..., description="Название профессии")
+
+
+class VibeQuestionsResponse(BaseModel):
+    """Ответ с уточняющими вопросами"""
+    questions: List[ClarifyingQuestion] = Field(..., description="Список вопросов")
 

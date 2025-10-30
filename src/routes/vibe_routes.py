@@ -2,12 +2,20 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List, Dict, Any
 
-from src.models.vibe_model import ProfessionCard, VibeGenerateResponse
+from src.models.vibe_model import (
+    ProfessionCard, 
+    VibeGenerateResponse,
+    VibeQuestionsRequest,
+    VibeQuestionsResponse,
+    ClarifyingQuestion,
+    QuestionOption
+)
 from src.utils.auth import verify_token
 from src.database.db import get_user_by_username
 from src.database.personality_db import get_latest_personality_result
 from src.database.astro_db import get_astro_profile
 from src.agent.core.profession_cards_agent import ProfessionCardsAgent
+from src.agent.core.profession_vibe_agent import ProfessionVibeAgent
 
 router = APIRouter(prefix="/vibe", tags=["Vibe Generator"])
 security = HTTPBearer()
@@ -115,6 +123,103 @@ async def generate_profession_cards(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Ошибка генерации карточек: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Внутренняя ошибка сервера: {str(e)}"
+        )
+
+
+@router.post("/questions", response_model=VibeQuestionsResponse)
+async def get_profession_questions(
+    request: VibeQuestionsRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Получение уточняющих вопросов о выбранной профессии
+    """
+    token = credentials.credentials
+    username = verify_token(token)
+    
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = get_user_by_username(username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден"
+        )
+    
+    # Получаем данные теста личности (опционально)
+    personality_data = None
+    try:
+        personality_result = get_latest_personality_result(user["id"])
+        if personality_result:
+            personality_data = {
+                "code": personality_result.get("code"),
+                "personality_type": personality_result.get("personality_type"),
+                "description": personality_result.get("description"),
+                "strengths": personality_result.get("strengths"),
+                "weaknesses": personality_result.get("weaknesses"),
+            }
+    except Exception:
+        pass
+    
+    # Получаем данные астрологии (опционально)
+    astrology_data = None
+    try:
+        astro_profile = get_astro_profile(user["id"])
+        if astro_profile:
+            astrology_data = {
+                "zodiac_sign": astro_profile.get("zodiac_sign"),
+                "element": astro_profile.get("element"),
+                "traits": astro_profile.get("traits"),
+                "strengths": astro_profile.get("strengths"),
+            }
+    except Exception:
+        pass
+    
+    # Создаем агента и генерируем вопросы
+    try:
+        agent = ProfessionVibeAgent(
+            profession_title=request.profession_title,
+            personality_data=personality_data,
+            astrology_data=astrology_data,
+            temperature=0.5,
+            max_tokens=4096,
+        )
+        
+        questions_data = await agent.generate_questions()
+        
+        # Преобразуем в модели Pydantic
+        questions = [
+            ClarifyingQuestion(
+                id=q.get("id"),
+                question=q.get("question"),
+                allow_custom_answer=q.get("allow_custom_answer", True),
+                options=[
+                    QuestionOption(
+                        id=opt.get("id"),
+                        text=opt.get("text")
+                    )
+                    for opt in q.get("options", [])
+                ]
+            )
+            for q in questions_data.get("questions", [])
+        ]
+        
+        return VibeQuestionsResponse(questions=questions)
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ошибка генерации вопросов: {str(e)}"
         )
     except Exception as e:
         raise HTTPException(
