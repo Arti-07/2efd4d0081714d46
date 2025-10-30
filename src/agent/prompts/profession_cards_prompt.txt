@@ -56,33 +56,10 @@ Choose emojis that clearly represent the profession:
 - Fashion/Beauty: 👗 💄 💅 👠 👔 💇 🎀
 - Other: Choose most representative emoji
 
-GRADIENT SELECTION:
-Create visually distinct gradients using hex colors:
-- Format: "linear-gradient(135deg, #COLOR1 0%, #COLOR2 100%)"
-- Use vibrant, professional color combinations
-- Examples (use these as inspiration, create variations):
-  * Purple-Blue: #667eea → #764ba2
-  * Pink-Red: #f093fb → #f5576c
-  * Blue-Cyan: #4facfe → #00f2fe
-  * Green-Teal: #43e97b → #38f9d7
-  * Orange-Pink: #fa709a → #fee140
-  * Violet-Pink: #a8edea → #fed6e3
-  * Red-Orange: #f83600 → #f9d423
-  * Blue-Purple: #5f72bd → #9b23ea
-  * Mint-Aqua: #11998e → #38ef7d
-  * Sunset: #ff7e5f → #feb47b
-  * Ocean: #2e3192 → #1bffff
-  * Forest: #134e5e → #71b280
-  * Fire: #fc4a1a → #f7b733
-  * Sky: #56ccf2 → #2f80ed
-  * Rose: #f857a6 → #ff5858
-  * Gold: #fdbb2d → #22c1c3
-  * Lavender: #c471f5 → #fa71cd
-  * Berry: #ee0979 → #ff6a00
-  * Emerald: #16a085 → #f4d03f
-  * Coral: #ff9966 → #ff5e62
-- Each profession MUST have unique gradient
-- Vary color combinations to ensure visual diversity across 30-40 cards
+GRADIENT:
+- The gradient will be assigned automatically on the client side
+- Simply use empty string "" for gradient field
+- Do NOT generate gradient values
 
 OUTPUT REQUIREMENTS:
 Return ONLY a valid JSON array with this exact structure:
@@ -94,7 +71,7 @@ Return ONLY a valid JSON array with this exact structure:
     "matchScore": 85,
     "basedOn": ["Личность", "Астрология"],
     "icon": "🎨",
-    "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+    "gradient": ""
   }}
 ]
 
@@ -105,14 +82,13 @@ FIELD SPECIFICATIONS:
 - matchScore: Integer from 0-100
 - basedOn: Array containing "Личность" and/or "Астрология" (or English equivalents based on input language)
 - icon: Single emoji character
-- gradient: CSS linear-gradient string with two colors
+- gradient: Empty string "" (will be assigned automatically)
 
 QUALITY STANDARDS:
 - Match scores should be realistic (avoid too many 95%+ scores)
 - Descriptions should be specific and inspiring
 - Professions should be diverse and modern
 - basedOn field must accurately reflect which data was used
-- All gradients must be unique and visually appealing
 - Icons must be clearly representative
 
 VALIDATION:
@@ -121,7 +97,6 @@ VALIDATION:
 - basedOn array not empty
 - matchScore is integer between 0-100
 - Return 30-40 profession objects (minimum 30, maximum 40)
-- Each profession must have unique gradient
 - All professions should be distinct and varied
 
 IMPORTANT: Generate at least 30 different professions to give users a comprehensive selection.
