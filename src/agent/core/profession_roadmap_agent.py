@@ -161,9 +161,29 @@ class ProfessionRoadmapAgent:
         # Fix unescaped newlines within strings
         text = text.replace('\r\n', ' ').replace('\r', ' ')
         
-        # Fix unescaped backslashes (but preserve already escaped ones)
-        # This regex finds backslashes that aren't followed by ", n, t, r, \, /, b, f, u
-        text = re.sub(r'\\(?!["\\/bfnrtu])', r'\\\\', text)
+        # More aggressive backslash fixing
+        # First, temporarily mark valid escape sequences
+        text = text.replace(r'\"', '\x00QUOTE\x00')
+        text = text.replace(r'\\', '\x00BACKSLASH\x00')
+        text = text.replace(r'\/', '\x00SLASH\x00')
+        text = text.replace(r'\n', '\x00NEWLINE\x00')
+        text = text.replace(r'\t', '\x00TAB\x00')
+        text = text.replace(r'\r', '\x00RETURN\x00')
+        text = text.replace(r'\b', '\x00BACKSPACE\x00')
+        text = text.replace(r'\f', '\x00FORMFEED\x00')
+        
+        # Now escape all remaining backslashes
+        text = text.replace('\\', '\\\\')
+        
+        # Restore valid escape sequences
+        text = text.replace('\x00QUOTE\x00', r'\"')
+        text = text.replace('\x00BACKSLASH\x00', r'\\')
+        text = text.replace('\x00SLASH\x00', r'\/')
+        text = text.replace('\x00NEWLINE\x00', r'\n')
+        text = text.replace('\x00TAB\x00', r'\t')
+        text = text.replace('\x00RETURN\x00', r'\r')
+        text = text.replace('\x00BACKSPACE\x00', r'\b')
+        text = text.replace('\x00FORMFEED\x00', r'\f')
         
         return text
     
