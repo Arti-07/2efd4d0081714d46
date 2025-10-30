@@ -44,3 +44,19 @@ class VibeQuestionsResponse(BaseModel):
     """Ответ с уточняющими вопросами"""
     questions: List[ClarifyingQuestion] = Field(..., description="Список вопросов")
 
+
+class ProfessionValidateRequest(BaseModel):
+    """Запрос на валидацию профессии"""
+    profession_title: str = Field(..., description="Название профессии для проверки")
+
+
+class ProfessionValidateResponse(BaseModel):
+    """Ответ с результатом валидации профессии"""
+    is_valid: bool = Field(..., description="Является ли профессия валидной")
+    status: str = Field(..., description="Статус: valid, invalid, too_general, rare, obsolete")
+    message: str = Field(..., description="Сообщение для пользователя")
+    suggestions: List[str] = Field(default=[], description="Предложенные альтернативы")
+    found_count: int = Field(..., description="Количество найденных вакансий")
+    sample_vacancies: List[str] = Field(default=[], description="Примеры названий вакансий")
+    hh_total_found: int = Field(..., description="Общее количество на HH.ru")
+    query: str = Field(..., description="Исходный запрос")

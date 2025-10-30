@@ -6,15 +6,19 @@
 
 ```
 agent/
-├── core/                           # Основной код агентов
-│   ├── career_navigator_agent.py   # Агент для создания карьерного пути
-│   ├── profession_cards_agent.py   # Агент для генерации карточек профессий
-│   └── prompts.py                  # Загрузчик промптов
-├── prompts/                        # Системные промпты для агентов
-│   ├── system_prompt.txt           # Промпт для career_navigator_agent
-│   └── profession_cards_prompt.txt # Промпт для profession_cards_agent
-├── settings.py                     # Конфигурация агентов
-└── *_agent_test.py                # Тестовые файлы для агентов
+├── core/                              # Основной код агентов
+│   ├── career_navigator_agent.py      # Агент для создания карьерного пути
+│   ├── profession_cards_agent.py      # Агент для генерации карточек профессий
+│   ├── profession_validator_agent.py  # Агент для валидации профессий через HH.ru
+│   ├── profession_vibe_agent.py       # Агент для анализа вайба профессии
+│   └── prompts.py                     # Загрузчик промптов
+├── prompts/                           # Системные промпты для агентов
+│   ├── system_prompt.txt              # Промпт для career_navigator_agent
+│   ├── profession_cards_prompt.txt    # Промпт для profession_cards_agent
+│   ├── profession_validator_prompt.txt # Промпт для profession_validator_agent
+│   └── profession_vibe_prompt.txt     # Промпт для profession_vibe_agent
+├── settings.py                        # Конфигурация агентов
+└── *_agent_test.py                   # Тестовые файлы для агентов
 ```
 
 ## Существующие агенты
@@ -56,6 +60,39 @@ agent = ProfessionCardsAgent(
 
 cards = await agent.generate_profession_cards()
 ```
+
+### 3. ProfessionValidatorAgent
+**Файл**: `core/profession_validator_agent.py`  
+**Промпт**: `prompts/profession_validator_prompt.txt`  
+**Назначение**: Валидация профессии через API HH.ru и AI анализ. Проверяет существование профессии на рынке труда и определяет её валидность.
+
+**Пример использования**:
+```python
+from src.agent.core.profession_validator_agent import ProfessionValidatorAgent
+
+agent = ProfessionValidatorAgent(
+    profession_title="Python разработчик",
+    temperature=0.3,
+    max_tokens=2048,
+)
+
+result = await agent.validate_profession()
+# result содержит:
+# - is_valid: bool
+# - status: "valid" | "invalid" | "rare" | "too_general" | "obsolete"
+# - message: str (сообщение для пользователя)
+# - suggestions: list[str] (альтернативы)
+# - hh_total_found: int (количество вакансий на HH.ru)
+# - sample_vacancies: list[str] (примеры вакансий)
+```
+
+**Особенности**:
+- Интегрируется с API HH.ru для поиска вакансий
+- Использует AI для анализа результатов поиска
+- Определяет фантастические профессии (маг, волшебник)
+- Предупреждает о слишком общих названиях (специалист, работа)
+- Помечает устаревшие профессии
+- Предоставляет альтернативы при необходимости
 
 ## Как добавить нового агента
 
