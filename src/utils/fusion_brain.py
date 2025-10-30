@@ -134,41 +134,66 @@ class FusionBrainAPI:
         Returns:
             List[str]: Список base64 изображений или None при ошибке
         """
+        max_attempts = attempts  # Сохраняем для проверки
         while attempts > 0:
-            response = requests.get(
-                self.URL + 'key/api/v1/pipeline/status/' + request_id,
-                headers=self.AUTH_HEADERS
-            )
-            response.raise_for_status()
-            data = response.json()
-            
-            status = data.get('status')
-            
-            if status == 'DONE':
-                result = data.get('result', {})
+            try:
+                response = requests.get(
+                    self.URL + 'key/api/v1/pipeline/status/' + request_id,
+                    headers=self.AUTH_HEADERS,
+                    timeout=15  # Таймаут для запроса
+                )
+                response.raise_for_status()
+                data = response.json()
                 
-                # Проверка на цензуру
-                if result.get('censored', False):
-                    raise ValueError("Изображение не прошло модерацию контента")
+                status = data.get('status')
                 
-                files = result.get('files')
-                if files:
-                    return files
+                if status == 'DONE':
+                    result = data.get('result', {})
+                    
+                    # Проверка на цензуру
+                    if result.get('censored', False):
+                        raise ValueError("Изображение не прошло модерацию контента")
+                    
+                    files = result.get('files')
+                    if files:
+                        return files
+                    else:
+                        raise ValueError("Генерация завершена, но файлы не получены")
+                
+                elif status == 'FAIL':
+                    error = data.get('errorDescription', 'Неизвестная ошибка')
+                    raise ValueError(f"Ошибка генерации: {error}")
+                
+                elif status == 'INITIAL' or status == 'PROCESSING':
+                    attempts -= 1
+                    if attempts > 0:
+                        time.sleep(delay)
                 else:
-                    raise ValueError("Генерация завершена, но файлы не получены")
-            
-            elif status == 'FAIL':
-                error = data.get('errorDescription', 'Неизвестная ошибка')
-                raise ValueError(f"Ошибка генерации: {error}")
-            
-            elif status == 'INITIAL' or status == 'PROCESSING':
+                    raise ValueError(f"Неизвестный статус: {status}")
+                    
+            except requests.exceptions.HTTPError as e:
+                # Если 403 или другая HTTP ошибка - прерываем цикл
+                if e.response.status_code == 403:
+                    raise ValueError(f"API отклонил запрос (403 Forbidden). Возможно превышен лимит запросов.")
+                elif e.response.status_code >= 500:
+                    # Серверная ошибка - можем попробовать еще раз
+                    attempts -= 1
+                    if attempts > 0:
+                        time.sleep(delay)
+                    else:
+                        raise ValueError(f"Серверная ошибка API: {e.response.status_code}")
+                else:
+                    raise ValueError(f"HTTP ошибка: {e.response.status_code}")
+                    
+            except requests.exceptions.RequestException as e:
+                # Другие ошибки сети
                 attempts -= 1
                 if attempts > 0:
                     time.sleep(delay)
-            else:
-                raise ValueError(f"Неизвестный статус: {status}")
+                else:
+                    raise ValueError(f"Ошибка сети: {str(e)}")
         
-        raise TimeoutError("Превышено время ожидания генерации")
+        raise TimeoutError(f"Превышено время ожидания генерации ({max_attempts * delay} сек)")
 
     def generate_image(
         self,
