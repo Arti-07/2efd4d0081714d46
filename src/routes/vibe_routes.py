@@ -10,7 +10,11 @@ from src.models.vibe_model import (
     ClarifyingQuestion,
     QuestionOption,
     ProfessionValidateRequest,
-    ProfessionValidateResponse
+    ProfessionValidateResponse,
+    AmbientsGenerateRequest,
+    AmbientsGenerateResponse,
+    AmbientEnvironment,
+    ProfessionTools
 )
 from src.utils.auth import verify_token
 from src.database.db import get_user_by_username
@@ -19,6 +23,7 @@ from src.database.astro_db import get_astro_profile
 from src.agent.core.profession_cards_agent import ProfessionCardsAgent
 from src.agent.core.profession_vibe_agent import ProfessionVibeAgent
 from src.agent.core.profession_validator_agent import ProfessionValidatorAgent
+from src.agent.core.profession_ambients_agent import ProfessionAmbientsAgent
 
 router = APIRouter(prefix="/vibe", tags=["Vibe Generator"])
 security = HTTPBearer()
@@ -281,6 +286,128 @@ async def validate_profession(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Ошибка валидации: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Внутренняя ошибка сервера: {str(e)}"
+        )
+
+
+@router.post("/ambients", response_model=AmbientsGenerateResponse)
+async def generate_profession_ambients(
+    request: AmbientsGenerateRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Генерация окружений (амбиентов) для выбранной профессии
+    на основе всех собранных данных: личность, астрология, профессия, уточняющие вопросы
+    """
+    token = credentials.credentials
+    username = verify_token(token)
+    
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = get_user_by_username(username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден"
+        )
+    
+    # Получаем данные теста личности
+    personality_data = None
+    try:
+        personality_result = get_latest_personality_result(user["id"])
+        if personality_result:
+            personality_data = {
+                "code": personality_result.get("code"),
+                "personality_type": personality_result.get("personality_type"),
+                "description": personality_result.get("description"),
+                "full_description": personality_result.get("full_description"),
+                "strengths": personality_result.get("strengths"),
+                "weaknesses": personality_result.get("weaknesses"),
+                "career_advice": personality_result.get("career_advice"),
+                "careers": personality_result.get("careers"),
+            }
+    except Exception:
+        pass  # Personality data is optional
+    
+    # Получаем данные астрологии
+    astrology_data = None
+    try:
+        astro_profile = get_astro_profile(user["id"])
+        if astro_profile:
+            astrology_data = {
+                "zodiac_sign": astro_profile.get("zodiac_sign"),
+                "element": astro_profile.get("element"),
+                "quality": astro_profile.get("quality"),
+                "traits": astro_profile.get("traits"),
+                "careers": astro_profile.get("careers"),
+                "strengths": astro_profile.get("strengths"),
+                "challenges": astro_profile.get("challenges"),
+            }
+    except Exception:
+        pass  # Astrology data is optional
+    
+    # Формируем данные уточняющих вопросов
+    clarifying_data = {
+        "questions": [
+            {
+                "id": qa.question_id,
+                "question": qa.question_text,
+                "answer": qa.answer
+            }
+            for qa in request.question_answers
+        ]
+    }
+    
+    # Создаем агента и генерируем окружения
+    try:
+        agent = ProfessionAmbientsAgent(
+            profession_title=request.profession_title,
+            personality_data=personality_data,
+            astrology_data=astrology_data,
+            clarifying_data=clarifying_data,
+            temperature=0.6,
+            max_tokens=8192,
+        )
+        
+        ambients_data = await agent.generate_ambients()
+        
+        # Преобразуем в модели Pydantic
+        ambients = [
+            AmbientEnvironment(
+                id=amb.get("id"),
+                name=amb.get("name"),
+                text=amb.get("text"),
+                image_prompt=amb.get("image_prompt"),
+                sound_prompt=amb.get("sound_prompt"),
+                voice=amb.get("voice"),
+            )
+            for amb in ambients_data.get("ambients", [])
+        ]
+        
+        tools = ProfessionTools(
+            title=ambients_data.get("tools", {}).get("title", "Инструменты профессии"),
+            items=ambients_data.get("tools", {}).get("items", [])
+        )
+        
+        return AmbientsGenerateResponse(
+            profession_title=ambients_data.get("profession_title", request.profession_title),
+            ambients=ambients,
+            tools=tools
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ошибка генерации окружений: {str(e)}"
         )
     except Exception as e:
         raise HTTPException(
