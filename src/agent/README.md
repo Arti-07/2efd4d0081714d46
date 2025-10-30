@@ -23,7 +23,35 @@ agent/
 
 ## Существующие агенты
 
-### 1. CareerNavigatorAgent
+### 1. ProfessionRoadmapAgent 🆕
+**Файл**: `core/profession_roadmap_agent.py`  
+**Промпт**: `prompts/profession_roadmap_prompt.txt`  
+**Назначение**: Генерация подробного карьерного roadmap для конкретной профессии с персонализацией на основе личности и астрологии
+
+**Пример использования**:
+```python
+from src.agent.core.profession_roadmap_agent import ProfessionRoadmapAgent
+
+agent = ProfessionRoadmapAgent(
+    profession_title="Backend Python разработчик",
+    personality_data={"code": "ENTP-T", ...},
+    astrology_data={"zodiac_sign": "Водолей", ...},
+    current_level="BEGINNER",
+    temperature=0.4,
+    max_tokens=16384,
+)
+
+roadmap = await agent.generate_roadmap()
+```
+
+**Особенности**:
+- Генерирует 5 этапов развития: BEGINNER → JUNIOR → MIDDLE → SENIOR → EXPERT
+- Каждый этап включает: навыки, инструменты, проекты, ресурсы, персональные советы
+- Содержит вехи, сертификации и карьерные пути
+- Персонализируется на основе типа личности и астрологических данных
+- Возвращает структурированный JSON с подробным контентом
+
+### 2. CareerNavigatorAgent
 **Файл**: `core/career_navigator_agent.py`  
 **Промпт**: `prompts/system_prompt.txt`  
 **Назначение**: Создание детального карьерного плана с этапами развития
@@ -42,7 +70,7 @@ agent = CareerNavigatorAgent(
 career_plan = await agent.createCareer()
 ```
 
-### 2. ProfessionCardsAgent
+### 3. ProfessionCardsAgent
 **Файл**: `core/profession_cards_agent.py`  
 **Промпт**: `prompts/profession_cards_prompt.txt`  
 **Назначение**: Генерация персонализированных карточек профессий на основе теста личности и астрологии
@@ -61,7 +89,7 @@ agent = ProfessionCardsAgent(
 cards = await agent.generate_profession_cards()
 ```
 
-### 3. ProfessionValidatorAgent
+### 4. ProfessionValidatorAgent
 **Файл**: `core/profession_validator_agent.py`  
 **Промпт**: `prompts/profession_validator_prompt.txt`  
 **Назначение**: Валидация профессии через API HH.ru и AI анализ. Проверяет существование профессии на рынке труда и определяет её валидность.
