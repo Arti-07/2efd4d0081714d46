@@ -202,6 +202,7 @@ async def get_profession_questions(
             ClarifyingQuestion(
                 id=q.get("id"),
                 question=q.get("question"),
+                allow_custom_answer=q.get("allow_custom_answer", True),
                 options=[
                     QuestionOption(
                         id=opt.get("id"),

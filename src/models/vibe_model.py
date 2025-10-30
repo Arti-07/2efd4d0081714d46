@@ -31,6 +31,7 @@ class ClarifyingQuestion(BaseModel):
     """Уточняющий вопрос о профессии"""
     id: str = Field(..., description="Идентификатор вопроса")
     question: str = Field(..., description="Текст вопроса")
+    allow_custom_answer: bool = Field(default=True, description="Разрешить пользователю ввести свой ответ")
     options: List[QuestionOption] = Field(..., description="Варианты ответа")
 
 
