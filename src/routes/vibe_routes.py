@@ -26,7 +26,9 @@ from src.models.vibe_model import (
     AmbientsWithMediaResponse,
     AmbientEnvironmentWithMedia,
     GenerateMediaForAmbientRequest,
-    GenerateMediaForAmbientResponse
+    GenerateMediaForAmbientResponse,
+    ProfessionInfoRequest,
+    ProfessionInfoResponse
 )
 from src.utils.auth import verify_token
 from src.database.db import get_user_by_username
@@ -36,6 +38,7 @@ from src.agent.core.profession_cards_agent import ProfessionCardsAgent
 from src.agent.core.profession_vibe_agent import ProfessionVibeAgent
 from src.agent.core.profession_validator_agent import ProfessionValidatorAgent
 from src.agent.core.profession_ambients_agent import ProfessionAmbientsAgent
+from src.agent.core.profession_info_agent import ProfessionInfoAgent
 from src.utils.fusion_brain import FusionBrainAPI
 from src.config import settings
 
@@ -939,4 +942,100 @@ async def generate_media_for_ambient(
     
     logger.info(f"Returning response: image_path={response.image_path}, sound_path={response.sound_path}, voice_path={response.voice_path}")
     return response
+
+
+@router.post("/profession-info", response_model=ProfessionInfoResponse)
+async def get_profession_info(
+    request: ProfessionInfoRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Получение детальной информации о профессии
+    
+    Возвращает карточки с информацией:
+    - Распорядок рабочего дня
+    - Стек технологий
+    - Польза для компании
+    - Пути роста
+    - Рынок и перспективы
+    - Необходимые навыки
+    - Образование и обучение
+    - Плюсы и минусы
+    - Рабочая среда
+    - Типичные проекты
+    """
+    token = credentials.credentials
+    username = verify_token(token)
+    
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = get_user_by_username(username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден"
+        )
+    
+    # Получаем данные теста личности (опционально для персонализации)
+    personality_data = None
+    try:
+        personality_result = get_latest_personality_result(user["id"])
+        if personality_result:
+            personality_data = {
+                "code": personality_result.get("code"),
+                "personality_type": personality_result.get("personality_type"),
+                "description": personality_result.get("description"),
+                "strengths": personality_result.get("strengths"),
+                "weaknesses": personality_result.get("weaknesses"),
+                "career_paths": personality_result.get("career_paths"),
+            }
+    except Exception as e:
+        logger.warning(f"Не удалось получить данные теста личности: {str(e)}")
+    
+    # Получаем астрологические данные (опционально для персонализации)
+    astrology_data = None
+    try:
+        astro_profile = get_astro_profile(user["id"])
+        if astro_profile:
+            astrology_data = {
+                "sun_sign": astro_profile.get("sun_sign"),
+                "element": astro_profile.get("element"),
+                "description": astro_profile.get("description"),
+                "career_recommendations": astro_profile.get("career_recommendations"),
+            }
+    except Exception as e:
+        logger.warning(f"Не удалось получить астрологические данные: {str(e)}")
+    
+    try:
+        # Создаем агента для генерации информации
+        agent = ProfessionInfoAgent(
+            profession_title=request.profession_title,
+            profession_description=request.profession_description,
+            personality_data=personality_data,
+            astrology_data=astrology_data,
+        )
+        
+        # Генерируем информацию
+        info_data = await agent.generate_info()
+        
+        # Формируем ответ
+        response = ProfessionInfoResponse(
+            profession_title=info_data["profession_title"],
+            cards=info_data["cards"]
+        )
+        
+        logger.info(f"Successfully generated {len(response.cards)} info cards for profession: {request.profession_title}")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Ошибка при генерации информации о профессии: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Не удалось сгенерировать информацию о профессии: {str(e)}"
+        )
 
