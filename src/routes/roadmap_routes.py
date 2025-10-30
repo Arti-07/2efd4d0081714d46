@@ -11,6 +11,7 @@ from src.utils.auth import verify_token
 from src.database.db import get_user_by_username
 from src.database.personality_db import get_latest_personality_result
 from src.database.astro_db import get_astro_profile
+from src.database.roadmap_db import save_roadmap, get_roadmap, get_user_roadmaps, delete_roadmap
 from src.agent.core.profession_roadmap_agent import ProfessionRoadmapAgent
 
 router = APIRouter(prefix="/roadmap", tags=["Career Roadmap"])
@@ -118,6 +119,18 @@ async def generate_profession_roadmap(
         
         logger.info(f"Successfully generated roadmap with {len(roadmap.stages)} stages")
         
+        # Сохраняем roadmap в БД
+        try:
+            roadmap_id = save_roadmap(
+                user_id=user["id"],
+                profession_title=request.profession_title,
+                roadmap_data=roadmap_data
+            )
+            logger.info(f"Saved roadmap to database with ID: {roadmap_id}")
+        except Exception as e:
+            logger.warning(f"Failed to save roadmap to database: {str(e)}")
+            # Не падаем, просто логируем - roadmap все равно вернем
+        
         return RoadmapGenerateResponse(
             roadmap=roadmap,
             has_personality_data=personality_data is not None,
@@ -135,6 +148,141 @@ async def generate_profession_roadmap(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Внутренняя ошибка сервера при генерации roadmap: {str(e)}"
+        )
+
+
+@router.get("/saved/{profession_title}")
+async def get_saved_roadmap(
+    profession_title: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Получить сохраненный roadmap для конкретной профессии
+    """
+    token = credentials.credentials
+    username = verify_token(token)
+    
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = get_user_by_username(username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден"
+        )
+    
+    try:
+        saved_roadmap = get_roadmap(user["id"], profession_title)
+        
+        if saved_roadmap is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Roadmap для профессии '{profession_title}' не найден"
+            )
+        
+        return saved_roadmap
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving saved roadmap: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при получении roadmap"
+        )
+
+
+@router.get("/saved")
+async def get_all_saved_roadmaps(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Получить все сохраненные roadmaps пользователя
+    """
+    token = credentials.credentials
+    username = verify_token(token)
+    
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = get_user_by_username(username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден"
+        )
+    
+    try:
+        roadmaps = get_user_roadmaps(user["id"])
+        
+        return {
+            "roadmaps": roadmaps,
+            "total_count": len(roadmaps)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error retrieving user roadmaps: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при получении roadmaps"
+        )
+
+
+@router.delete("/saved/{roadmap_id}")
+async def delete_saved_roadmap(
+    roadmap_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Удалить сохраненный roadmap
+    """
+    token = credentials.credentials
+    username = verify_token(token)
+    
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user = get_user_by_username(username)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден"
+        )
+    
+    try:
+        deleted = delete_roadmap(roadmap_id, user["id"])
+        
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Roadmap не найден или не принадлежит пользователю"
+            )
+        
+        return {
+            "message": "Roadmap успешно удален",
+            "roadmap_id": roadmap_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting roadmap: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ошибка при удалении roadmap"
         )
 
 

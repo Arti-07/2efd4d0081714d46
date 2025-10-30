@@ -23,14 +23,6 @@ class RoadmapProject(BaseModel):
     skills: List[str] = Field(..., description="Навыки, которые применяются")
 
 
-class RoadmapResource(BaseModel):
-    """Модель ресурса для обучения"""
-    type: str = Field(..., description="Тип: course, book, video, documentation, community")
-    title: str = Field(..., description="Название ресурса")
-    description: str = Field(..., description="Почему ресурс ценен")
-    link: Optional[str] = Field(None, description="URL ресурса")
-
-
 class InterviewQuestion(BaseModel):
     """Модель вопроса на собеседовании"""
     question: str = Field(..., description="Вопрос на собеседовании")
@@ -48,7 +40,6 @@ class RoadmapStage(BaseModel):
     skills: List[RoadmapSkill] = Field(..., description="Навыки для изучения (3-7 пунктов)")
     tools: List[RoadmapTool] = Field(..., description="Инструменты для освоения (3-10 пунктов)")
     projects: List[RoadmapProject] = Field(..., description="Проекты для практики (2-4 пункта)")
-    resources: List[RoadmapResource] = Field(..., description="Ресурсы для обучения (3-6 пунктов)")
     interviewQuestions: List[InterviewQuestion] = Field(default_factory=list, description="Вопросы на собеседовании (5-10 пунктов)")
     
     class Config:

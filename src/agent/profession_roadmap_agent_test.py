@@ -89,6 +89,10 @@ async def main():
             for tool in stage.get('tools', [])[:5]:  # Показываем первые 5
                 print(f"     • {tool.get('name')} ({tool.get('category')})")
             
+            print(f"\n  💻 Проекты ({len(stage.get('projects', []))}):")
+            for proj in stage.get('projects', [])[:2]:  # Показываем первые 2
+                print(f"     • {proj.get('title')}")
+            
             print(f"\n  💬 Вопросы на собеседовании ({len(stage.get('interviewQuestions', []))}):")
             for qa in stage.get('interviewQuestions', [])[:3]:  # Показываем первые 3
                 print(f"     Q: {qa.get('question')}")

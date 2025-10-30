@@ -40,7 +40,6 @@ PROCESSING LOGIC FOR EACH STAGE:
 - Recommend tools, technologies, frameworks to learn
 - Suggest practical projects to build
 - Provide estimated timeline
-- Include resources (courses, books, communities)
 - Add interview questions and answers relevant to this stage
 
 PERSONALIZATION BASED ON PERSONALITY:
@@ -113,14 +112,6 @@ Return ONLY a valid JSON object with this exact structure:
           "skills": ["Skill 1", "Skill 2"]
         }}
       ],
-      "resources": [
-        {{
-          "type": "course|book|video|documentation|community",
-          "title": "Resource name",
-          "description": "Why this resource is valuable",
-          "link": "URL if applicable, or null"
-        }}
-      ],
       "interviewQuestions": [
         {{
           "question": "Example interview question for this level",
@@ -138,7 +129,6 @@ Return ONLY a valid JSON object with this exact structure:
       "skills": [...],
       "tools": [...],
       "projects": [...],
-      "resources": [...],
       "interviewQuestions": [...]
     }},
     {{
@@ -151,7 +141,6 @@ Return ONLY a valid JSON object with this exact structure:
       "skills": [...],
       "tools": [...],
       "projects": [...],
-      "resources": [...],
       "interviewQuestions": [...]
     }},
     {{
@@ -164,7 +153,6 @@ Return ONLY a valid JSON object with this exact structure:
       "skills": [...],
       "tools": [...],
       "projects": [...],
-      "resources": [...],
       "interviewQuestions": [...]
     }},
     {{
@@ -177,7 +165,6 @@ Return ONLY a valid JSON object with this exact structure:
       "skills": [...],
       "tools": [...],
       "projects": [...],
-      "resources": [...],
       "interviewQuestions": [...]
     }}
   ]
@@ -187,10 +174,9 @@ FIELD SPECIFICATIONS:
 - profession: Target profession name
 - overview: High-level summary with personality and astrology insights
 - stages: Array of 5 stages (BEGINNER → EXPERT)
-- Each stage must have: id, level, title, duration, description, goals (3-5 items), skills (3-7 items), tools (3-10 items), projects (2-4 items), resources (3-6 items), interviewQuestions (5-10 items)
+- Each stage must have: id, level, title, duration, description, goals (3-5 items), skills (3-7 items), tools (3-10 items), projects (2-4 items), interviewQuestions (5-10 items)
 - skills.importance: "high", "medium", or "low"
 - tools.category: "framework", "language", "platform", "software", "tool"
-- resources.type: "course", "book", "video", "documentation", "community"
 - interviewQuestions: Array of question-answer pairs relevant to the stage level
 
 INTERVIEW QUESTIONS GUIDELINES:
