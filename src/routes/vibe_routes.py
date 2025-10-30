@@ -8,7 +8,9 @@ from src.models.vibe_model import (
     VibeQuestionsRequest,
     VibeQuestionsResponse,
     ClarifyingQuestion,
-    QuestionOption
+    QuestionOption,
+    ProfessionValidateRequest,
+    ProfessionValidateResponse
 )
 from src.utils.auth import verify_token
 from src.database.db import get_user_by_username
@@ -16,6 +18,7 @@ from src.database.personality_db import get_latest_personality_result
 from src.database.astro_db import get_astro_profile
 from src.agent.core.profession_cards_agent import ProfessionCardsAgent
 from src.agent.core.profession_vibe_agent import ProfessionVibeAgent
+from src.agent.core.profession_validator_agent import ProfessionValidatorAgent
 
 router = APIRouter(prefix="/vibe", tags=["Vibe Generator"])
 security = HTTPBearer()
@@ -220,6 +223,64 @@ async def get_profession_questions(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Ошибка генерации вопросов: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Внутренняя ошибка сервера: {str(e)}"
+        )
+
+
+@router.post("/validate", response_model=ProfessionValidateResponse)
+async def validate_profession(
+    request: ProfessionValidateRequest,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """
+    Валидация профессии через API HH.ru и AI анализ
+    """
+    token = credentials.credentials
+    username = verify_token(token)
+    
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Невалидный токен",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Проверяем, что название профессии не пустое
+    if not request.profession_title or len(request.profession_title.strip()) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Название профессии должно содержать хотя бы 2 символа"
+        )
+    
+    # Создаем агента валидации
+    try:
+        agent = ProfessionValidatorAgent(
+            profession_title=request.profession_title,
+            temperature=0.3,
+            max_tokens=2048,
+        )
+        
+        validation_result = await agent.validate_profession()
+        
+        return ProfessionValidateResponse(
+            is_valid=validation_result.get("is_valid", False),
+            status=validation_result.get("status", "unknown"),
+            message=validation_result.get("message", ""),
+            suggestions=validation_result.get("suggestions", []),
+            found_count=validation_result.get("found_count", 0),
+            sample_vacancies=validation_result.get("sample_vacancies", []),
+            hh_total_found=validation_result.get("hh_total_found", 0),
+            query=validation_result.get("query", request.profession_title),
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ошибка валидации: {str(e)}"
         )
     except Exception as e:
         raise HTTPException(
