@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from src.config import settings
 from src.database import init_database
-from src.routes import auth_router, personality_router, astro_router, audio_router, vibe_router
+from src.routes import auth_router, personality_router, astro_router, audio_router, vibe_router, image_router
 
 import uvicorn
 
@@ -38,6 +38,7 @@ app.include_router(personality_router)
 app.include_router(astro_router)
 app.include_router(vibe_router)
 app.include_router(audio_router)
+app.include_router(image_router)
 
 
 @app.get("/")

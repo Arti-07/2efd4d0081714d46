@@ -10,6 +10,9 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
     DATABASE_PATH: str = os.getenv("DATABASE_PATH", "data/career_ai.db")
     ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")
+    FUSION_BRAIN_API_KEY: str = os.getenv("FUSION_BRAIN_API_KEY", "")
+    FUSION_BRAIN_SECRET_KEY: str = os.getenv("FUSION_BRAIN_SECRET_KEY", "")
+    FUSION_BRAIN_API_URL: str = os.getenv("FUSION_BRAIN_API_URL", "https://api-key.fusionbrain.ai/")
     APP_NAME: str = "Career AI Backend"
     APP_VERSION: str = "1.0.0"
     ALLOWED_ORIGINS: list = os.getenv("ALLOWED_ORIGINS", "*").split(",")
