@@ -148,3 +148,24 @@ class GenerateMediaForAmbientResponse(BaseModel):
     sound_error: str | None = Field(default=None, description="Ошибка генерации звука")
     voice_path: str | None = Field(default=None, description="Путь к голосу")
     voice_error: str | None = Field(default=None, description="Ошибка генерации голоса")
+
+
+class ProfessionInfoRequest(BaseModel):
+    """Запрос на получение детальной информации о профессии"""
+    profession_title: str = Field(..., description="Название профессии")
+    profession_description: str | None = Field(default=None, description="Краткое описание профессии")
+
+
+class ProfessionInfoCard(BaseModel):
+    """Модель карточки с информацией о профессии"""
+    id: str = Field(..., description="Идентификатор карточки")
+    type: str = Field(..., description="Тип карточки")
+    title: str = Field(..., description="Заголовок карточки")
+    icon: str = Field(..., description="Иконка карточки")
+    content: Dict[str, Any] = Field(..., description="Содержимое карточки")
+
+
+class ProfessionInfoResponse(BaseModel):
+    """Ответ с детальной информацией о профессии"""
+    profession_title: str = Field(..., description="Название профессии")
+    cards: List[ProfessionInfoCard] = Field(..., description="Список карточек с информацией")
