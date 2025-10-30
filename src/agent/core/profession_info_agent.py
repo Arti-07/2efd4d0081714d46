@@ -6,10 +6,11 @@ ProfessionInfoAgent - агент для генерации детальной и
 - Распорядок рабочего дня
 - Стек технологий и инструментов
 - Польза для компании
-- Пути роста (junior → senior)
 - Перспективность направления
 - Количество вакансий и конкурентность
-- Дополнительные карточки с описанием профессии
+- Плюсы и минусы
+- Рабочая среда
+- Типичные проекты
 
 Структура выходных данных:
 {
@@ -50,19 +51,6 @@ ProfessionInfoAgent - агент для генерации детальной и
     },
     {
       "id": "card_4",
-      "type": "career_path",
-      "title": "Пути роста",
-      "content": {
-        "levels": [
-          {"level": "Junior", "description": "...", "duration": "1-2 года", "salary_range": "..."},
-          {"level": "Middle", "description": "...", "duration": "2-3 года", "salary_range": "..."},
-          {"level": "Senior", "description": "...", "duration": "3-5 лет", "salary_range": "..."},
-          {"level": "Lead/Architect", "description": "...", "duration": "5+ лет", "salary_range": "..."}
-        ]
-      }
-    },
-    {
-      "id": "card_5",
       "type": "market_overview",
       "title": "Рынок и перспективы",
       "content": {
@@ -77,26 +65,7 @@ ProfessionInfoAgent - агент для генерации детальной и
       }
     },
     {
-      "id": "card_6",
-      "type": "skills",
-      "title": "Необходимые навыки",
-      "content": {
-        "hard_skills": ["Навык 1", "Навык 2", ...],
-        "soft_skills": ["Навык 1", "Навык 2", ...]
-      }
-    },
-    {
-      "id": "card_7",
-      "type": "education",
-      "title": "Образование и обучение",
-      "content": {
-        "formal_education": "Описание требуемого образования",
-        "courses": ["Курс 1", "Курс 2", ...],
-        "learning_time": "Примерный срок обучения"
-      }
-    },
-    {
-      "id": "card_8",
+      "id": "card_5",
       "type": "pros_cons",
       "title": "Плюсы и минусы",
       "content": {
