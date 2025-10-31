@@ -87,6 +87,29 @@ def init_database():
         ON astro_profiles(user_id)
     """)
 
+    # Таблица для roadmaps
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS roadmaps (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            profession_title TEXT NOT NULL,
+            roadmap_data TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+        )
+    """)
+
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_roadmaps_user_id 
+        ON roadmaps(user_id)
+    """)
+
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_roadmaps_user_profession 
+        ON roadmaps(user_id, profession_title)
+    """)
+
     conn.commit()
     conn.close()
 
